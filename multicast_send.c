@@ -28,7 +28,7 @@
 
 void usage(char *progname)
 {
-    fprintf(stderr, "Usage: %s MULTICAST_IP PORT INTERFACE_IP MESSAGE_FILE\n",
+    fprintf(stderr, "Usage: %s MULTICAST_IP PORT INTERFACE_IP PACKET_SIZE PACKET_NUMBER PACKET_INTERVAL_IN_Us\n",
             progname);
 }
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
      * Argument processing part.
      */
 
-    if (argc != 5)
+    if (argc != 7)
     {
         usage(argv[0]);
         retval = 1;
@@ -81,7 +81,20 @@ int main(int argc, char *argv[])
     }
 
     // Read message file.
-    stream = fopen(argv[4], "rb");
+    off_t size = atoi(argv[4]);
+    if (size < 64) {
+        size = 64;
+    }
+    msg = malloc(size);
+    if (! msg)
+    {
+        fprintf(stderr, "Error: unable to allocate memory\n");
+        retval = 8;
+        goto out;
+    }
+    memset(msg, 0, size);
+
+    /*stream = fopen(argv[4], "rb");
     if (! stream)
     {
         fprintf(stderr, "Error: unable to open message file\n");
@@ -105,14 +118,6 @@ int main(int argc, char *argv[])
         goto out;
     }
 
-    msg = malloc(size);
-    if (! msg)
-    {
-        fprintf(stderr, "Error: unable to allocate memory\n");
-        retval = 8;
-        goto out;
-    }
-
     if (fseeko(stream, 0, SEEK_SET) != 0)
     {
         fprintf(stderr, "Error: unable to seek inside file\n");
@@ -125,8 +130,11 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Error: unable to read message file\n");
         retval = 9;
         goto out;
-    }
+    } */
 
+    // send number
+    int num = atoi(argv[5]);
+    int interval = atoi(argv[6]);
     /*
      * Network part.
      */
@@ -168,19 +176,24 @@ int main(int argc, char *argv[])
            .s_addr = mip.s_addr
        }
    };
-   if (sendto(fd, msg, size, 0,
-              (const struct sockaddr *)(&daddr), sizeof(daddr)) == -1)
-   {
-       perror("Error: unable to send message");
-       retval = 13;
-       goto out;
+   int i = 0;
+   for (i = 0; i < num; i++) {
+      *((int *)msg) = i + 1;
+
+      if (sendto(fd, msg, size, 0,
+              (const struct sockaddr *)(&daddr), sizeof(daddr)) == -1) {
+        perror("Error: unable to send message");
+        retval = 13;
+        goto out;
+      }
+      usleep(interval);
    }
 
 out:
     if (fd != -1)
         close(fd);
-    if (stream)
-        fclose(stream);
+//    if (stream)
+//        fclose(stream);
     free(msg);
     return retval;
 }

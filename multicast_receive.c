@@ -411,13 +411,15 @@ void poll_sockets(const struct Sockets *in)
                 if ((fds[i].revents & POLLIN) || (fds[i].revents & POLLPRI))
                 {
                     read_count = read(fds[i].fd, buffer, READ_BUFFER_SIZE);
+                    int seq = *((int*)buffer);
                     gettimeofday(&tv, NULL);
                     memset(buf, 0, sizeof(buf));
-                    sprintf(buf, "%lld.%06lld read %lld bytes %s from socket %d\n",
+                    sprintf(buf, "%lld.%06lld read %lld bytes %s seq %d from socket %d\n",
                             (long long)(tv.tv_sec),
                             (long long)(tv.tv_usec),
                             (long long)(read_count),
                             (read_count >= READ_BUFFER_SIZE?" (or more)":""),
+                            seq,
                             fds[i].fd);
                     flog(buf);
                 }
