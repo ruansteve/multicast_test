@@ -385,6 +385,9 @@ void poll_sockets(const struct Sockets *in)
     ssize_t read_count;
     int i;
     int ret;
+    int last_seq = 0;
+    int packet_lost = 0;
+    int packet_total = 0;
 
     // Infinite poll() loop.
     for (;;)
@@ -422,6 +425,11 @@ void poll_sockets(const struct Sockets *in)
                             seq,
                             fds[i].fd);
                     flog(buf);
+                    if (seq != last_seq + 1) {
+                        packet_lost += 1;
+                    }
+                    last_seq = seq;
+                    packet_total +=1;
                 }
             }
         }
@@ -442,6 +450,11 @@ void poll_sockets(const struct Sockets *in)
         if (exit_poll)
             break;
     }
+
+    double r = (double)packet_lost/(double)packet_total;
+    memset(buf, 0, sizeof(buf));
+    sprintf(buf, "total packet %d, packet lost %d, %f\n", packet_total, packet_lost, r);
+    flog(buf);
 
     free(buffer);
     return;
