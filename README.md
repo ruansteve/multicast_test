@@ -8,11 +8,13 @@ How to Use
 
 1. run 'make' in source folder, it will gerenate 2 executable file: multicast_receive, multicast_send
 
-2. to send multicast: ./multicast_send 239.1.1.1 1234 192.168.1.132 "test message"
+2. to send multicast: ./multicast_send 239.1.1.1 1234 192.168.1.132 4000 100 2000
 
     239.1.1.1 is multicast group as destination ip,  1234 is udp port  
     
     192.168.1.132 is interface ip where this multicast packet is sent
+    
+    4000 is packet size,  100 is packet number, 2000 is send interval in usecond
     
 3.  to receive ssm multicast: 
 
