@@ -385,6 +385,7 @@ void poll_sockets(const struct Sockets *in)
     ssize_t read_count;
     int i;
     int ret;
+    int first_seq = 0;
     int last_seq = 0;
     int packet_lost = 0;
     int packet_total = 0;
@@ -425,6 +426,9 @@ void poll_sockets(const struct Sockets *in)
                             seq,
                             fds[i].fd);
                     flog(buf);
+                    if (first_seq == 0) {
+                        first_seq = seq;
+                    }
                     if (seq != last_seq + 1) {
                         packet_lost += 1;
                     }
