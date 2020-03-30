@@ -389,6 +389,7 @@ void poll_sockets(const struct Sockets *in)
     int last_seq = 0;
     int packet_lost = 0;
     int packet_total = 0;
+    int wrong_order = 0;
 
     // Infinite poll() loop.
     for (;;)
@@ -429,10 +430,14 @@ void poll_sockets(const struct Sockets *in)
                     if (first_seq == 0) {
                         first_seq = seq;
                     }
-                    if (seq != last_seq + 1) {
-                        packet_lost += 1;
+                    if (seq < last_seq) {
+                        wrong_order += 1;
+                    } else if (seq != last_seq + 1) {
+                        packet_lost += (seq - last_seq);
+                        last_seq = seq;
+                    } else {
+                        last_seq = seq;
                     }
-                    last_seq = seq;
                     packet_total +=1;
                 }
             }
@@ -457,7 +462,8 @@ void poll_sockets(const struct Sockets *in)
 
     double r = (double)packet_lost/(double)packet_total;
     memset(buf, 0, sizeof(buf));
-    sprintf(buf, "total packet %d, packet lost %d, %f\n", packet_total, packet_lost, r);
+    sprintf(buf, "first seq: %d, wrong order times：%d\n total packet %d, packet lost %d, %f\n", 
+        wrong_order, first_seq, packet_total, packet_lost, r);
     flog(buf);
 
     free(buffer);
