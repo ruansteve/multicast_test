@@ -419,14 +419,14 @@ void poll_sockets(const struct Sockets *in)
                     int seq = *((int*)buffer);
                     gettimeofday(&tv, NULL);
                     memset(buf, 0, sizeof(buf));
-                    sprintf(buf, "%lld.%06lld read %lld bytes %s seq %d from socket %d\n",
+                    /*sprintf(buf, "%lld.%06lld read %lld bytes %s seq %d from socket %d\n",
                             (long long)(tv.tv_sec),
                             (long long)(tv.tv_usec),
                             (long long)(read_count),
                             (read_count >= READ_BUFFER_SIZE?" (or more)":""),
                             seq,
                             fds[i].fd);
-                    flog(buf);
+                    flog(buf);*/
                     if (first_seq == 0) {
                         first_seq = seq;
                     }
