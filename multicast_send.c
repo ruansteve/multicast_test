@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
    };
    int i = 0;
    for (i = 0; i < num; i++) {
-      *((int *)msg) = i + 1;
+      *((int *)msg) = i;
 
       if (sendto(fd, msg, size, 0,
               (const struct sockaddr *)(&daddr), sizeof(daddr)) == -1) {

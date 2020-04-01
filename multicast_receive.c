@@ -418,15 +418,15 @@ void poll_sockets(const struct Sockets *in)
                     read_count = read(fds[i].fd, buffer, READ_BUFFER_SIZE);
                     int seq = *((int*)buffer);
                     gettimeofday(&tv, NULL);
-                    memset(buf, 0, sizeof(buf));
-                    /*sprintf(buf, "%lld.%06lld read %lld bytes %s seq %d from socket %d\n",
+                    /*memset(buf, 0, sizeof(buf));
+                    sprintf(buf, "%lld.%06lld read %lld bytes %s seq %d, last seq %d\n",
                             (long long)(tv.tv_sec),
                             (long long)(tv.tv_usec),
                             (long long)(read_count),
                             (read_count >= READ_BUFFER_SIZE?" (or more)":""),
                             seq,
-                            fds[i].fd);
-                    flog(buf);*/
+                            last_seq);
+                    flog(buf); */
                     if (first_seq == 0) {
                         first_seq = seq;
                     }
@@ -462,8 +462,8 @@ void poll_sockets(const struct Sockets *in)
 
     double r = (double)packet_lost/(double)packet_total;
     memset(buf, 0, sizeof(buf));
-    sprintf(buf, "first seq: %d, wrong order times：%d\n total packet %d, packet lost %d, %f\n", 
-        wrong_order, first_seq, packet_total, packet_lost, r);
+    sprintf(buf, "first seq: %d, last seq: %d, wrong order times：%d\n total packet %d, packet lost %d, %f\n", 
+       first_seq, last_seq, wrong_order, packet_total, packet_lost, r);
     flog(buf);
 
     free(buffer);
