@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #define MIN_MSG_SIZE (1)
 #define MAX_MSG_SIZE (32768)
@@ -176,6 +177,16 @@ int main(int argc, char *argv[])
            .s_addr = mip.s_addr
        }
    };
+   struct timespec deadline;
+   struct timespec starttime;
+   clock_gettime(CLOCK_MONOTONIC, &deadline);
+   clock_gettime(CLOCK_MONOTONIC, &starttime);
+   deadline.tv_nsec += interval;
+   if(deadline.tv_nsec >= 1000000000) {
+       deadline.tv_nsec -= 1000000000;
+       deadline.tv_sec++;
+   }
+
    int i = 0;
    for (i = 0; i < num; i++) {
       *((int *)msg) = i;
@@ -186,8 +197,28 @@ int main(int argc, char *argv[])
         retval = 13;
         goto out;
       }
-      usleep(interval);
+
+      clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
+ 
+       deadline.tv_nsec += interval;
+       if(deadline.tv_nsec >= 1000000000) {
+           deadline.tv_nsec -= 1000000000;
+           deadline.tv_sec++;
+      }
    }
+   
+   struct timespec endtime;
+   clock_gettime(CLOCK_MONOTONIC, &endtime);
+   int second = endtime.tv_sec - starttime.tv_sec;
+   long nsec = 0;
+   if (endtime.tv_nsec > starttime.tv_nsec) {
+       nsec = endtime.tv_nsec - starttime.tv_nsec;
+   } else {
+       nsec = starttime.tv_nsec - endtime.tv_nsec;
+       second -= 1;
+   }
+
+   printf("it takes %d seconds %d nanosecond to send %d packets", second, nsec, num);
 
 out:
     if (fd != -1)
