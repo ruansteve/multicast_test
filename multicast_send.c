@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
      * Argument processing part.
      */
 
-    if (argc != 7)
+    if (argc < 7)
     {
         usage(argv[0]);
         retval = 1;
@@ -136,6 +136,11 @@ int main(int argc, char *argv[])
     // send number
     int num = atoi(argv[5]);
     int interval = atoi(argv[6]);
+    
+    int idx = 0;
+    if (argc >= 8) {
+        idx = atoi(argv[7]);
+    }
     /*
      * Network part.
      */
@@ -187,6 +192,24 @@ int main(int argc, char *argv[])
        deadline.tv_sec++;
    }
 
+   /* for multiple send session, it will have a random delay */
+   if (idx > 0) {
+       int rand, i;
+       struct timespec delay;
+       clock_gettime(CLOCK_MONOTONIC, &delay);
+       srandom(delay.tv_nsec);
+       for (i = 0; i < idx; i++){
+           rand = random();
+       }
+
+       delay.tv_nsec += (rand % interval);
+       if(delay.tv_nsec >= 1000000000) {
+           delay.tv_nsec -= 1000000000;
+           delay.tv_sec++;
+       }
+       clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &deadline, NULL);
+   }
+
    int i = 0;
    for (i = 0; i < num; i++) {
       *((int *)msg) = i;
@@ -218,7 +241,7 @@ int main(int argc, char *argv[])
        second -= 1;
    }
 
-   printf("it takes %d seconds %d nanosecond to send %d packets", second, nsec, num);
+   printf("it takes %d seconds %d nanosecond to send %d packets\n", second, nsec, num);
 
 out:
     if (fd != -1)
